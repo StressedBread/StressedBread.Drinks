@@ -1,4 +1,5 @@
 ﻿using StressedBread.Drinks;
+using StressedBread.Drinks.Controllers;
 using StressedBread.Drinks.Endpoints;
 using StressedBread.Drinks.Services;
 using StressedBread.Drinks.UI;
@@ -9,6 +10,8 @@ var listEndpoint = new ListEndpoint();
 
 var apiService = new ApiService(app.Client, apiConfig, listEndpoint);
 
-var mainMenu = new MainMenuUI();
+var menuUi = new MenuUI();
 
-apiService.GetDrinksByCategory();
+var apiController = new ApiController(apiService, menuUi);
+
+await apiController.GetDrinksByCategory();
