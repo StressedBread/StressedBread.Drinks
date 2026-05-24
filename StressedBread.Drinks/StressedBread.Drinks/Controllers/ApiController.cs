@@ -1,4 +1,5 @@
-﻿using StressedBread.Drinks.Services;
+﻿using StressedBread.Drinks.Models.DTOs;
+using StressedBread.Drinks.Services;
 using StressedBread.Drinks.UI;
 
 namespace StressedBread.Drinks.Controllers;
@@ -18,9 +19,17 @@ internal class ApiController
         while (true)
         {
             var result = await _apiService.GetDrinksCategoriesAsync();
+
             if (result.IsSuccess && result.Data != null)
             {
-                string drinksCategory = _mainMenuUI.DisplayDrinksCategories(result.Data.Drinks);
+                var categories = result.Data.Drinks
+                    .Select(d => new DrinkCategoryDTO 
+                    { 
+                        Category = d.StrCategory ?? string.Empty 
+                    })
+                    .ToList();
+
+                string drinksCategory = _mainMenuUI.DisplayDrinksCategories(categories);
                 await LoadDrinksByCategoryAsync(drinksCategory);
             }
             else
@@ -36,18 +45,27 @@ internal class ApiController
         var result = await _apiService.GetDrinksByCategoryAsync(drinksCategory);
         List<byte[]> drinkImages = new();
 
-        foreach (var drink in result.Data?.Drinks ?? [])
+        //implement drink images later
+        /*foreach (var drink in result.Data?.Drinks ?? [])
         {
             if (!string.IsNullOrEmpty(drink.StrDrinkThumb))
             {
                 var imageResult = await _apiService.GetDrinkImageAsync(drink.StrDrinkThumb);
                 drinkImages.Add(imageResult);                
             }
-        }
+        }*/
 
         if (result.IsSuccess && result.Data != null)
         {
-            _mainMenuUI.DisplayDrinksByCategory(result.Data.Drinks, drinkImages);
+            var drinks = result.Data.Drinks
+                    .Select(d => new FilterDrinksByCategoryDTO
+                    {
+                        Name = d.StrDrink ?? string.Empty,
+                        Image = d.StrDrinkThumb ?? string.Empty
+                    })
+                    .ToList();
+
+            _mainMenuUI.DisplayDrinksByCategory(drinks, drinkImages);
         }
         else
         {
