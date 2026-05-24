@@ -1,8 +1,12 @@
 ﻿namespace StressedBread.Drinks.Endpoints;
 internal class ListEndpoint
 {
-    internal readonly string Category = "list.php?c=list";
-    internal readonly string Glass = "list.php?g=list";
-    internal readonly string Ingredient = "list.php?i=list";
-    internal readonly string Alcoholic = "list.php?a=list";
+    internal const string ListByCategory = "list.php?c=list";
+    internal const string ListByGlass = "list.php?g=list";
+    internal const string ListByIngredient = "list.php?i=list";
+    internal const string ListByAlcoholic = "list.php?a=list";
+
+    internal const string FilterByCategory = "filter.php?c=";
+
+    internal const string LookupById = "lookup.php?i=";
 }

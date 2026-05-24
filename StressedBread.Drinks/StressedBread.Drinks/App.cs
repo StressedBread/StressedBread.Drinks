@@ -17,7 +17,7 @@ internal class App
     internal void ConfigureHttpClient()
     {
         _client.DefaultRequestHeaders.Accept.Clear();
-        _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
         _client.DefaultRequestHeaders.Add("User-Agent", "Drinks C# App");
     }
 }
