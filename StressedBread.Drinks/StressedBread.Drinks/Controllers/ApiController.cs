@@ -1,4 +1,6 @@
-﻿using StressedBread.Drinks.Models.DTOs;
+﻿using StressedBread.Drinks.Helpers;
+using StressedBread.Drinks.Models.API;
+using StressedBread.Drinks.Models.DTOs;
 using StressedBread.Drinks.Services;
 using StressedBread.Drinks.UI;
 
@@ -29,7 +31,19 @@ internal class ApiController
                     })
                     .ToList();
 
+                if (categories.Count == 0)
+                {
+                    _mainMenuUI.DisplayMessage("No drink categories found.");
+                    return;
+                }
+
                 string drinksCategory = _mainMenuUI.DisplayDrinksCategories(categories);
+
+                if (String.Equals(drinksCategory, "Exit", StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+
                 await LoadDrinksByCategoryAsync(drinksCategory);
             }
             else
@@ -43,17 +57,6 @@ internal class ApiController
     {
         drinksCategory = drinksCategory.Replace(" ", "_");
         var result = await _apiService.GetDrinksByCategoryAsync(drinksCategory);
-        List<byte[]> drinkImages = new();
-
-        //implement drink images later
-        /*foreach (var drink in result.Data?.Drinks ?? [])
-        {
-            if (!string.IsNullOrEmpty(drink.StrDrinkThumb))
-            {
-                var imageResult = await _apiService.GetDrinkImageAsync(drink.StrDrinkThumb);
-                drinkImages.Add(imageResult);                
-            }
-        }*/
 
         if (result.IsSuccess && result.Data != null)
         {
@@ -65,7 +68,54 @@ internal class ApiController
                     })
                     .ToList();
 
-            _mainMenuUI.DisplayDrinksByCategory(drinks, drinkImages);
+            if (drinks.Count == 0)
+            {
+                _mainMenuUI.DisplayMessage("No drinks found for the selected category.");
+                return;
+            }
+
+            string selectedDrink = _mainMenuUI.DisplayDrinksByCategory(drinks);
+
+            if (String.Equals(selectedDrink, "Back", StringComparison.OrdinalIgnoreCase))
+            {
+                await LoadDrinkCategoriesAsync();
+                return;
+            }
+
+            string selectedDrinkId = result.Data.Drinks.FirstOrDefault(d => d.StrDrink == selectedDrink)?.IdDrink ?? string.Empty;
+
+            await LoadDrinkDetailsAsync(selectedDrinkId);
+        }
+        else
+        {
+            _mainMenuUI.DisplayError(result.ErrorMessage, result.ErrorType);
+        }
+    }
+
+    internal async Task LoadDrinkDetailsAsync(string drinkId)
+    {
+        if (string.IsNullOrEmpty(drinkId))
+        {
+            _mainMenuUI.DisplayMessage("Invalid drink selection.");
+            return;
+        }
+
+        var result = await _apiService.GetDrinkDetailsAsync(drinkId);
+
+        if (result.IsSuccess && result.Data != null)
+        {
+            byte[] drinkImage = await _apiService.GetDrinkImageAsync(result.Data.Drinks
+                .Select(d => d.StrDrinkThumb).FirstOrDefault() ?? string.Empty);
+            
+            var drink = DrinkDetailMapper.MapToDrinkDetailDTO(result.Data.Drinks.FirstOrDefault());
+
+            if (drink == null)
+            {
+                _mainMenuUI.DisplayMessage("Drink details not found.");
+                return;
+            }
+
+            _mainMenuUI.DisplayDrinkDetails(drink, drinkImage);
         }
         else
         {

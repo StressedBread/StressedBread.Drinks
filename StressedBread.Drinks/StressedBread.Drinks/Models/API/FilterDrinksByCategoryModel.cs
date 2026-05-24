@@ -1,7 +1,7 @@
 ﻿namespace StressedBread.Drinks.Models.API;
 internal class FilterDrinksByCategoryModel
 {
-    internal string? StrDrink { get; set; }
-    internal string? StrDrinkThumb { get; set; }
-    internal string? IdDrink { get; set; }
+    public string? StrDrink { get; set; }
+    public string? StrDrinkThumb { get; set; }
+    public string? IdDrink { get; set; }
 }

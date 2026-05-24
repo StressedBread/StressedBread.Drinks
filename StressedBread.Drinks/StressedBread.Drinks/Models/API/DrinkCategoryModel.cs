@@ -1,5 +1,5 @@
 ﻿namespace StressedBread.Drinks.Models.API;
 internal class DrinkCategoryModel
 {
-    internal string? StrCategory { get; set; }
+    public string? StrCategory { get; set; }
 }

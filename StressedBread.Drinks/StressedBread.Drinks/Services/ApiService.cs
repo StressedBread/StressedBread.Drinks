@@ -61,6 +61,11 @@ internal class ApiService
         return await GetJsonAsync<JsonRootModel<FilterDrinksByCategoryModel>>($"{_apiConfig.BaseUrl}{ListEndpoint.FilterByCategory}{drinksCategory}");
     }
 
+    internal async Task<ApiResult<JsonRootModel<DrinkDetailModel>>> GetDrinkDetailsAsync(string drinkId)
+    {
+        return await GetJsonAsync<JsonRootModel<DrinkDetailModel>>($"{_apiConfig.BaseUrl}{ListEndpoint.LookupById}{drinkId}");
+    }
+
     internal async Task<byte[]> GetDrinkImageAsync(string imageUrl)
     {
         try
