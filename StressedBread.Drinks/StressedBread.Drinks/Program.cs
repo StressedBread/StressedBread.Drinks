@@ -2,6 +2,11 @@
 using StressedBread.Drinks.Controllers;
 using StressedBread.Drinks.Services;
 using StressedBread.Drinks.UI;
+using StressedBread.Drinks.Data;
+
+var databaseAccess = new DatabaseAccess();
+var databaseInit = new DatabaseInit(databaseAccess);
+databaseInit.InitializeDatabase();
 
 var app = new App();
 var apiConfig = new ApiConfig();
