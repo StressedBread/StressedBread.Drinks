@@ -66,26 +66,24 @@ internal class ApiService
         return await GetJsonAsync<JsonRootModel<DrinkDetailModel>>($"{_apiConfig.BaseUrl}{ListEndpoint.LookupById}{drinkId}");
     }
 
-    internal async Task<byte[]> GetDrinkImageAsync(string imageUrl)
+    internal async Task<ApiResult<byte[]>> GetDrinkImageAsync(string imageUrl)
     {
         try
         {
-            return await _client.GetByteArrayAsync(imageUrl);
+            var result = await _client.GetByteArrayAsync(imageUrl);
+            return ApiResult<byte[]>.Success(result);
         }
         catch (HttpRequestException ex)
         {
-            Console.WriteLine($"HTTP Error: {ex.Message}");
-            return Array.Empty<byte>();
+            return ApiResult<byte[]>.Failure(ex.Message, ErrorType.HttpError);
         }
         catch (TaskCanceledException ex)
         {
-            Console.WriteLine($"Timeout Error: {ex.Message}");
-            return Array.Empty<byte>();
+            return ApiResult<byte[]>.Failure(ex.Message, ErrorType.Timeout);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"An unexpected error occurred: {ex.Message}");
-            return Array.Empty<byte>();
+            return ApiResult<byte[]>.Failure(ex.Message, ErrorType.UnknownError);
         }
     }
 }

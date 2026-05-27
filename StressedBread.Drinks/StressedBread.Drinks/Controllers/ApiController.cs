@@ -82,7 +82,6 @@ internal class ApiController
 
             if (String.Equals(selectedDrink, "Back", StringComparison.OrdinalIgnoreCase))
             {
-                await LoadDrinkCategoriesAsync();
                 return;
             }
 
@@ -112,8 +111,14 @@ internal class ApiController
 
             if (drinkModel != null) await _sqlService.IncrementViewCounterAsync(drinkModel);
 
-            byte[] drinkImage = await _apiService.GetDrinkImageAsync(drinkModel?.StrDrinkThumb ?? string.Empty);
-            
+            var drinkImageResult = await _apiService.GetDrinkImageAsync(drinkModel?.StrDrinkThumb ?? string.Empty);
+
+            byte[]? drinkImage = Array.Empty<byte>();
+
+            if (!drinkImageResult.IsSuccess && drinkImageResult.Data == null) _mainMenuUI.DisplayError(drinkImageResult.ErrorMessage, drinkImageResult.ErrorType);
+            else
+                drinkImage = drinkImageResult.Data;
+
             var drinkDTO = DrinkDetailMapper.MapToDrinkDetailDTO(drinkModel);
 
             if (drinkDTO == null)

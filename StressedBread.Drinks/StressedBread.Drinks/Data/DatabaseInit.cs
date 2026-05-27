@@ -1,19 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
-using StressedBread.Drinks.Data.DatabaseQueries;
 
 namespace StressedBread.Drinks.Data;
 internal class DatabaseInit
 {
     internal string DefaultConnectionString { get; }
+    private readonly IConfiguration _configuration;
 
-    internal DatabaseInit()
+    internal DatabaseInit(IConfiguration configuration)
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .Build();
-
-        DefaultConnectionString = configuration.GetConnectionString("DefaultConnection")
+        _configuration = configuration;
+        DefaultConnectionString = _configuration.GetConnectionString("DefaultConnection")
                            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found in appsettings.json.");
     }
 }

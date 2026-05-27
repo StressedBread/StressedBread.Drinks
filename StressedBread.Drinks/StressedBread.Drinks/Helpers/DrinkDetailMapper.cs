@@ -9,7 +9,7 @@ internal class DrinkDetailMapper
     {
         if (drinkDetail == null) return null;
 
-        var ingredients = new DrinkDetailMapper().IngredientsMapper(drinkDetail);
+        var ingredients = IngredientsMapper(drinkDetail);
 
         return new DrinkDetailDTO
         {
@@ -23,7 +23,7 @@ internal class DrinkDetailMapper
         };
     }
 
-    private List<IngredientModel> IngredientsMapper(DrinkDetailModel drinkDetail)
+    private static List<IngredientModel> IngredientsMapper(DrinkDetailModel drinkDetail)
     {
         var ingredients = new List<IngredientModel>();
 

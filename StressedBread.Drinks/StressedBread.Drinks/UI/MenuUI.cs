@@ -83,7 +83,7 @@ internal class MenuUI
             .AddChoices(choices));
     }
 
-    internal DrinkOption DisplayDrinkDetails(DrinkDetailDTO drinkDetail, byte[] drinkImage)
+    internal DrinkOption DisplayDrinkDetails(DrinkDetailDTO drinkDetail, byte[]? drinkImage)
     {
         AnsiConsole.Clear();
 
