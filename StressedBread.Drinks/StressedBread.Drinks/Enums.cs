@@ -9,4 +9,18 @@ internal class Enums
         JsonError,
         UnknownError
     }
+
+    internal enum DrinkOption
+    {
+        AddToFavorites,
+        Exit
+    }
+
+    internal enum MenuOption
+    {
+        ViewDrinkCategories,
+        ViewFavoriteDrinks,
+        ViewDrinkViewCounter,
+        Exit
+    }
 }

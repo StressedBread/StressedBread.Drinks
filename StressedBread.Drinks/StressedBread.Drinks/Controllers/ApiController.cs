@@ -1,19 +1,23 @@
-﻿using StressedBread.Drinks.Helpers;
+﻿using StressedBread.Drinks.Data;
+using StressedBread.Drinks.Helpers;
 using StressedBread.Drinks.Models.API;
 using StressedBread.Drinks.Models.DTOs;
 using StressedBread.Drinks.Services;
 using StressedBread.Drinks.UI;
+using static StressedBread.Drinks.Enums;
 
 namespace StressedBread.Drinks.Controllers;
 internal class ApiController
 {
     private readonly ApiService _apiService;
     private readonly MenuUI _mainMenuUI;
+    private readonly SQLService _sqlService;
 
-    internal ApiController(ApiService apiService, MenuUI mainMenuUI)
+    internal ApiController(ApiService apiService, MenuUI mainMenuUI, SQLService sqlService)
     {
         _apiService = apiService;
         _mainMenuUI = mainMenuUI;
+        _sqlService = sqlService;
     }
 
     internal async Task LoadDrinkCategoriesAsync()
@@ -104,22 +108,84 @@ internal class ApiController
 
         if (result.IsSuccess && result.Data != null)
         {
-            byte[] drinkImage = await _apiService.GetDrinkImageAsync(result.Data.Drinks
-                .Select(d => d.StrDrinkThumb).FirstOrDefault() ?? string.Empty);
-            
-            var drink = DrinkDetailMapper.MapToDrinkDetailDTO(result.Data.Drinks.FirstOrDefault());
+            var drinkModel = result.Data.Drinks.FirstOrDefault();
 
-            if (drink == null)
+            if (drinkModel != null) await _sqlService.IncrementViewCounterAsync(drinkModel);
+
+            byte[] drinkImage = await _apiService.GetDrinkImageAsync(drinkModel?.StrDrinkThumb ?? string.Empty);
+            
+            var drinkDTO = DrinkDetailMapper.MapToDrinkDetailDTO(drinkModel);
+
+            if (drinkDTO == null)
             {
                 _mainMenuUI.DisplayMessage("Drink details not found.");
                 return;
             }
 
-            _mainMenuUI.DisplayDrinkDetails(drink, drinkImage);
+            var drinkOption = _mainMenuUI.DisplayDrinkDetails(drinkDTO, drinkImage);
+            if (drinkOption == DrinkOption.AddToFavorites && drinkModel != null)
+            {
+                int rows = await _sqlService.AddToFavoriteDrinks(drinkModel);
+
+                if (rows == 0) _mainMenuUI.DisplayMessage("Drink is already in favorites.");
+                else _mainMenuUI.DisplayMessage("Drink added to favorites.");
+            }
         }
         else
         {
             _mainMenuUI.DisplayError(result.ErrorMessage, result.ErrorType);
         }
+    }
+
+    internal async Task LoadFavoriteDrinksAsync()
+    {
+        var favoriteDrinks = await _sqlService.GetFavoriteDrinksAsync();
+
+        if (favoriteDrinks == null || favoriteDrinks.Count == 0)
+        {
+            _mainMenuUI.DisplayMessage("No favorite drinks found.");
+            return;
+        } 
+            
+        var result = _mainMenuUI.DisplayFavoriteDrinks(favoriteDrinks);
+        if (result == "0") return;
+
+        if (int.TryParse(result, out int drinkId))
+        {
+            var drinkToRemove = favoriteDrinks.FirstOrDefault(d => d.DrinkId == drinkId);
+            if (drinkToRemove != null)
+            {
+                int rowsAffected = await _sqlService.RemoveFromFavoriteDrinksAsync(drinkId);
+                if (rowsAffected > 0)
+                {
+                    _mainMenuUI.DisplayMessage($"Drink with ID {drinkId} removed from favorites.");
+                }
+                else
+                {
+                    _mainMenuUI.DisplayMessage($"Failed to remove drink with ID {drinkId} from favorites.");
+                }
+            }
+            else
+            {
+                _mainMenuUI.DisplayMessage($"No drink found with ID {drinkId} in favorites.");
+            }
+        }
+        else
+        {
+            _mainMenuUI.DisplayMessage("Invalid input. Please enter a valid drink ID or 0 to return to the main menu.");
+        }
+    }
+
+    internal async Task LoadDrinkViewCounterAsync()
+    {
+        var drinkViewCounts = await _sqlService.GetDrinksViewCountAsync();
+
+        if (drinkViewCounts == null || drinkViewCounts.Count == 0)
+        {
+            _mainMenuUI.DisplayMessage("No drink view counts found.");
+            return;
+        }
+
+        _mainMenuUI.DisplayDrinkViewCounter(drinkViewCounts);
     }
 }

@@ -1,20 +1,28 @@
 ﻿using StressedBread.Drinks;
 using StressedBread.Drinks.Controllers;
+using StressedBread.Drinks.Data;
+using StressedBread.Drinks.Data.DatabaseQueries;
 using StressedBread.Drinks.Services;
 using StressedBread.Drinks.UI;
-using StressedBread.Drinks.Data;
 
-var databaseAccess = new DatabaseAccess();
-var databaseInit = new DatabaseInit(databaseAccess);
-databaseInit.InitializeDatabase();
+var databaseInitQueries = new DatabaseInitQueries();
+var drinksQueries = new DrinksQueries();
+
+var databaseInit = new DatabaseInit();
+var databaseAccess = new DatabaseAccess(databaseInit);
+
+await databaseAccess.ExecuteAsync(databaseInitQueries.CreateFavoriteDrinksTableQuery());
+await databaseAccess.ExecuteAsync(databaseInitQueries.CreateDrinksViewCountTableQuery());
 
 var app = new App();
 var apiConfig = new ApiConfig();
 
 var apiService = new ApiService(app.Client, apiConfig);
+var sqlService = new SQLService(databaseAccess, drinksQueries);
 
 var menuUi = new MenuUI();
 
-var apiController = new ApiController(apiService, menuUi);
+var apiController = new ApiController(apiService, menuUi, sqlService);
+var mainMenu = new MainMenu(menuUi, apiController);
 
-await apiController.LoadDrinkCategoriesAsync();
+await mainMenu.DisplayMainMenuAsync();

@@ -3,10 +3,60 @@ using Spectre.Console;
 using static StressedBread.Drinks.Enums;
 using StressedBread.Drinks.Models.DTOs;
 using System.Diagnostics;
+using StressedBread.Drinks.Converters;
 
 namespace StressedBread.Drinks.UI;
 internal class MenuUI
 {
+    internal MenuOption DisplayMainMenu()
+    {
+        AnsiConsole.Clear();
+        return AnsiConsole.Prompt(new SelectionPrompt<MenuOption>()
+            .Title("Select an [green]option[/]:")
+            .UseConverter(option => EnumToStringFormatAndConvert.Convert(option))
+            .AddChoices(Enum.GetValues<MenuOption>()));
+    }
+
+    internal string DisplayFavoriteDrinks(List<FavoriteDrinksDTO> favoriteDrinks)
+    {
+        AnsiConsole.Clear();
+
+        var table = new Table();
+
+        table.Title("Favorite Drinks");
+
+        table.AddColumn("ID");
+        table.AddColumn("Name");
+
+        foreach (var drink in favoriteDrinks)
+        {
+            table.AddRow(drink.DrinkId.ToString(), drink.DrinkName);
+        }
+
+        AnsiConsole.Write(table);
+        
+        return AnsiConsole.Ask<string>("Enter the [green]ID[/] of the drink to remove it from favorites or [green]0[/] to return to the main menu:");
+    }
+
+    internal void DisplayDrinkViewCounter(List<DrinksViewCountDTO> drinkViewCounts)
+    {
+        AnsiConsole.Clear();
+
+        var table = new Table();
+
+        table.AddColumn("Drink Name");
+        table.AddColumn("View Count");
+
+        foreach (var drink in drinkViewCounts)
+        {
+            table.AddRow(drink.DrinkName, drink.ViewCount.ToString());
+        }
+
+        AnsiConsole.Write(table);
+        AnsiConsole.MarkupLine("Press any key to return to the main menu...");
+        Console.ReadKey(true);
+    }
+
     internal string DisplayDrinksCategories(List<DrinkCategoryDTO> result)
     {
         AnsiConsole.Clear();
@@ -33,7 +83,7 @@ internal class MenuUI
             .AddChoices(choices));
     }
 
-    internal void DisplayDrinkDetails(DrinkDetailDTO drinkDetail, byte[] drinkImage)
+    internal DrinkOption DisplayDrinkDetails(DrinkDetailDTO drinkDetail, byte[] drinkImage)
     {
         AnsiConsole.Clear();
 
@@ -72,8 +122,9 @@ internal class MenuUI
             );
 
         AnsiConsole.Write(grid);
-        AnsiConsole.MarkupLine("Press any key to return to the main menu...");
-        Console.ReadKey(true);
+        return AnsiConsole.Prompt(new SelectionPrompt<DrinkOption>()
+            .UseConverter(option => EnumToStringFormatAndConvert.Convert(option))
+            .AddChoices(Enum.GetValues<DrinkOption>()));
     }
 
     internal void DisplayError(string errorMessage, ErrorType errorType)

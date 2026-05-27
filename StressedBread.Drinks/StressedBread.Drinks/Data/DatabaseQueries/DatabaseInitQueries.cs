@@ -5,8 +5,8 @@ internal class DatabaseInitQueries
     {
         return @"
         CREATE TABLE IF NOT EXISTS DrinksViewCount (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            DrinkId INTEGER NOT NULL,
+            DrinkId INTEGER NOT NULL PRIMARY KEY,
+            DrinkName TEXT NOT NULL,
             ViewCount INTEGER NOT NULL
         );";
     }
@@ -15,8 +15,7 @@ internal class DatabaseInitQueries
     {
         return @"
         CREATE TABLE IF NOT EXISTS FavoriteDrinks (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            DrinkId INTEGER NOT NULL,
+            DrinkId INTEGER NOT NULL PRIMARY KEY,
             DrinkName TEXT NOT NULL
         );";
     }

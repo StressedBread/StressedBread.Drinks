@@ -4,10 +4,25 @@ using Dapper;
 namespace StressedBread.Drinks.Data;
 internal class DatabaseAccess
 {
-    internal void Execute(string connectionString, string query, object? parameters = null)
+    private readonly DatabaseInit _databaseInit;
+    private readonly string _connectionString;
+    internal DatabaseAccess(DatabaseInit databaseInit)
     {
-        using var connection = new SqliteConnection(connectionString);
-        connection.Open();
-        connection.Execute(query, parameters);
+        _databaseInit = databaseInit;
+        _connectionString = _databaseInit.DefaultConnectionString;
+    }
+
+    internal async Task<int> ExecuteAsync(string query, object? parameters = null)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        return await connection.ExecuteAsync(query, parameters);
+    }
+
+    internal async Task<IEnumerable<T>> QueryAsync<T>(string query)
+    {
+        using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync();
+        return await connection.QueryAsync<T>(query);
     }
 }
